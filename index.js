@@ -1,7 +1,5 @@
 const { addonBuilder, serveHTTP } = require('stremio-addon-sdk');
 const axios = require('axios');
-const express = require('express');
-const cors = require('cors');
 
 // 🔁 REPLACE THIS WITH YOUR ACTUAL API URL (from Render)
 const API_BASE_URL = 'https://animepahe-api-4hpp.onrender.com';
@@ -70,7 +68,7 @@ builder.defineMetaHandler(async (args) => {
         const episodes = releasesResponse.data.data;
 
         const meta = toStremioMeta(anime);
-        meta.videos = episodes.map((ep, index) => ({
+        meta.videos = episodes.map((ep) => ({
             id: `animepahe:${session}:${ep.session}`,
             title: `Episode ${ep.episode}`,
             released: new Date().toISOString(),
@@ -124,14 +122,5 @@ builder.defineStreamHandler(async (args) => {
     }
 });
 
-const app = express();
-app.use(cors());
-app.get('/health', (req, res) => res.json({ status: 'ok' }));
-
-const addonInterface = builder.getInterface();
-app.use('/', addonInterface);
-
-const PORT = process.env.PORT || 7000;
-app.listen(PORT, () => {
-    console.log(`Addon running on port ${PORT}`);
-});
+// Use serveHTTP to start the addon – this handles Express internally
+serveHTTP(builder.getInterface(), { port: process.env.PORT || 7000 });
